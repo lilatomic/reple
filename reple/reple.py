@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 import sys
 import os
+from dataclasses import dataclass
+from typing import List
 
 from functools import reduce
 from operator import add
@@ -99,6 +101,13 @@ class CodeTemplate:
         repl_lines = ('\n' + self.line_epilogue + '\n').join(repl_lines)
         return self.template.format(prolog_lines=prolog_lines,
                 repl_lines=repl_lines, **self.template_args)
+
+
+@dataclass
+class RepleState:
+    prolog_lines: List[str]
+    repl_lines: List[str]
+
 
 class Reple:
     def __init__(self, comp_env, runtime_env, code_templ, lexer=None,
