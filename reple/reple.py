@@ -114,6 +114,7 @@ class Reple:
         self.lexer = None if lexer is None else PygmentsLexer(lexer)
         self.output_dir = output_dir
 
+        self.in_prolog = False
         self.prolog_lines = []
         self.repl_lines = []
 
