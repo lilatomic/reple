@@ -7,6 +7,7 @@ import re
 import sys
 import os
 from dataclasses import dataclass
+from json import JSONDecodeError
 from typing import List
 
 from functools import reduce
@@ -307,6 +308,8 @@ def run_reple(cmd_args):
             options to forward at runtime', default='')
     parser.add_argument('--cargs', dest='user_cargs', type=str, help='User\
             options to forward at compile time', default='')
+    parser.add_argument('--load', dest="load_file_name", type=str, help= 'File name for\
+            the saved Reple session')
     args = parser.parse_args(cmd_args)
 
     fname = get_config_fname(args)
@@ -326,6 +329,13 @@ def run_reple(cmd_args):
     terminal_opts = configure_terminal_opts(config['terminal_opts'])
 
     reple = Reple(comp_env, runtime_env, code_templ, **terminal_opts)
+
+    if args.load_file_name:
+        with open(args.load_file_name, "r") as repl_session_file:
+            state_json = json.load(repl_session_file)
+        state = RepleState(**state_json)
+        reple.load_state(state)
+        reple.execute("", "")
 
     reple.run()
 
