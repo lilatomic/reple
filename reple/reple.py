@@ -2,6 +2,8 @@
 
 from __future__ import unicode_literals
 
+import dataclasses
+import re
 import sys
 import os
 from dataclasses import dataclass
@@ -187,6 +189,14 @@ class Reple:
             self.executions.clear()
         elif line == 'quit':
             return False
+        elif line.startswith('save'):
+            save_file_token = re.match(r"save\s*\(\"(.*)\"\)", line)
+            if len(save_file_token.groups()) != 1:
+                print("invalid file for saving")
+            else:
+                save_file_name = save_file_token.groups()[0]
+                with open(save_file_name, 'w') as f:
+                    json.dump(dataclasses.asdict(self.dump_state()), f)
         elif len(line) <= 0:
             pass
         elif line[0] == self.prolog_char:
