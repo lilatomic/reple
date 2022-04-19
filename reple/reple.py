@@ -245,6 +245,17 @@ class Reple:
             if not stat:
                 break
 
+    def dump_state(self) -> RepleState:
+        return RepleState(
+            prolog_lines=self.prolog_lines,
+            repl_lines=self.repl_lines,
+        )
+
+    def load_state(self, state: RepleState):
+        self.prolog_lines = state.prolog_lines
+        self.repl_lines = state.repl_lines
+
+
 def configure_terminal_opts(terminal_opts):
     rterm_opts= {}
     if 'lexer_class' in terminal_opts:
