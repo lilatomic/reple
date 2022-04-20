@@ -1,0 +1,29 @@
+{
+	"run": "bash {bin_fname}",
+	"compile": "{compiler} {code_fname} {bin_fname}",
+	"compile_args": {
+		"compiler": "cp",
+		"code_suffix": ".sh"
+	},
+	"template": "{template_begin}\n{prolog_lines}\n{repl_lines}\n",
+	"template_args": {
+		"template_begin": "#! /bin/bash",
+		"line_epilogue": "",
+		"line_demarcater": "echo '{demarcater}'"
+	},
+	"terminal_opts": {
+		"lexer_fn": "BashLexer",
+		"lexer_class": "pygments.lexers.shell",
+		"prolog_char": "%",
+		"enclosers": [
+			[
+				"(",
+				")"
+			],
+			[
+				"if",
+				"fi"
+			]
+		]
+	}
+}
