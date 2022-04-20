@@ -121,9 +121,12 @@ class DemarcatedOutputProcessor(OutputProcessor):
     start_str = "start:¶"
     end_str = "end:¶"
 
-    def demarcate_lines(self, lines: List[str], demarcater_template: str, output_fname_nonce: int) -> List[str]:
-        start = demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
-        end = demarcater_template.format(demarcater=f'{self.end_str}{output_fname_nonce}')
+    def __init__(self, demarcater_template: str):
+        self.demarcater_template = demarcater_template
+
+    def demarcate_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
+        start = self.demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
+        end = self.demarcater_template.format(demarcater=f'{self.end_str}{output_fname_nonce}')
         return [start] + lines + [end]
 
     def undemarcate_lines(self, lines: List[str]) -> Dict[int, List[str]]:
@@ -144,7 +147,7 @@ class DemarcatedOutputProcessor(OutputProcessor):
         return self.undemarcate_lines(executions[output_fname_nonce])[output_fname_nonce]
 
     def wrap_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
-        return self.demarcate_lines(lines, 'echo {demarcater}', output_fname_nonce)
+        return self.demarcate_lines(lines, output_fname_nonce)
 
 
 class Reple:

@@ -39,14 +39,16 @@ class TestSimpleOutputProcessor:
 
 
 class TestLineDemarcater:
+    demarcater_template = 'print("{demarcater}")'
+
     def test_demarcate_lines(self):
         lines = ['print(0)', 'print(1)']
-        r = DemarcatedOutputProcessor().demarcate_lines(lines, 'print("{demarcater}")', 4)
+        r = DemarcatedOutputProcessor(self.demarcater_template).demarcate_lines(lines, 4)
         assert r == ['print("start:¶4")', 'print(0)', 'print(1)', 'print("end:¶4")']
 
     def test_undemarcate_lines(self):
         output = ['start:¶4\n', '0\n', '1\n', 'end:¶4\n']
-        r = DemarcatedOutputProcessor().undemarcate_lines(output)
+        r = DemarcatedOutputProcessor(self.demarcater_template).undemarcate_lines(output)
         assert r == {
             4: ['0\n', '1\n']
         }
@@ -56,6 +58,6 @@ class TestLineDemarcater:
             0: ['start:¶0\n', '0\n', 'end:¶1\n'],
             1: ['start:¶0\n', '0\n', 'end:¶0\n', 'start:¶1\n', '1\n', 'end:¶1\n'],
         }
-        r = DemarcatedOutputProcessor().get_new_lines(executions, 1)
+        r = DemarcatedOutputProcessor(self.demarcater_template).get_new_lines(executions, 1)
         assert r == ['1\n']
         
