@@ -116,7 +116,7 @@ class SimpleOutputProcessor(OutputProcessor):
 class DemarcatedOutputProcessor(OutputProcessor):
     """Determine new lines by injecting fence lines"""
     start_str = "start:¶"
-    end_str = "end  :¶"
+    end_str = "end:¶"
 
     def demarcate_lines(self, lines: List[str], demarcater_template: str, output_fname_nonce: int) -> List[str]:
         start = demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
