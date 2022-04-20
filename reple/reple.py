@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, annotations
 
 import argparse
 import json
@@ -94,6 +94,12 @@ class CodeTemplate:
         return self.template.format(prolog_lines=prolog_lines,
                 repl_lines=repl_lines, **self.template_args)
 
+    def make_output_processor(self) -> OutputProcessor:
+        if self.line_demarcater:
+            return DemarcatedOutputProcessor(self.line_demarcater)
+        else:
+            return SimpleOutputProcessor()
+
 
 class OutputProcessor(ABC):
     """Process the output of executions to identify which input the lines should be associated with"""
@@ -177,7 +183,7 @@ class Reple:
 
         self.style = get_style_by_name('native')
         self.history = InMemoryHistory()
-        self.output_processor = SimpleOutputProcessor()
+        self.output_processor = self.code_templ.make_output_processor()
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
