@@ -186,22 +186,24 @@ class Reple:
     def get_fname(self):
         return self.output_name + str(self.output_fname_nonce)
 
-    def append_lines(self, prolog_line, repl_line):
-        if prolog_line != '':
-            self.prolog_lines.append(prolog_line)
-        if repl_line != '':
-            self.repl_lines.append(repl_line)
+    def append_lines(self, prolog_lines: List[str], repl_lines: List[str]):
+        if prolog_lines:
+            self.prolog_lines.extend(prolog_lines)
+        if repl_lines:
+            self.repl_lines.extend(repl_lines)
 
     def execute(self, repl_line, prolog_line = ''):
-        cur_prolog_lines = self.prolog_lines + [prolog_line]
-        cur_repl_lines = self.repl_lines + [repl_line]
+        wrapped_prolog_lines = self.output_processor.wrap_lines([prolog_line], self.output_fname_nonce)
+        cur_prolog_lines = self.prolog_lines + wrapped_prolog_lines
+        wrapped_repl_lines = self.output_processor.wrap_lines([repl_line], self.output_fname_nonce)
+        cur_repl_lines = self.repl_lines + wrapped_repl_lines
 
         code = self.code_templ.generate_code(cur_prolog_lines, cur_repl_lines)
         bin_fname = self.comp_env.compile(code, self.get_fname(), self.output_dir)
 
         if bin_fname:
             output_fname = bin_fname + '.out'
-            self.append_lines(prolog_line, repl_line)
+            self.append_lines(wrapped_prolog_lines, wrapped_repl_lines)
             self.runtime_env.run(bin_fname, output_fname)
 
             self.executions[self.output_fname_nonce] = open(output_fname, 'r').readlines()
