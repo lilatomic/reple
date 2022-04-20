@@ -6,8 +6,10 @@ import argparse
 import json
 import os
 import sys
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from operator import add
+from typing import List
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
@@ -91,6 +93,25 @@ class CodeTemplate:
         return self.template.format(prolog_lines=prolog_lines,
                 repl_lines=repl_lines, **self.template_args)
 
+
+class OutputProcessor(ABC):
+    """Process the output of executions to identify which input the lines should be associated with"""
+    @abstractmethod
+    def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
+        ...
+
+
+class SimpleOutputProcessor(OutputProcessor):
+    """Determine new lines by tracking the number of lines returned"""
+    def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
+        nnew_lines = len(executions[output_fname_nonce]) - len(
+            executions[output_fname_nonce - 1])
+        if nnew_lines > 0:
+            return executions[output_fname_nonce][-nnew_lines:]
+        else:
+            return []
+
+
 class Reple:
     def __init__(self, comp_env, runtime_env, code_templ, lexer=None,
             output_dir='/tmp/repl/', output_name='repl',
@@ -118,6 +139,7 @@ class Reple:
 
         self.style = get_style_by_name('native')
         self.history = InMemoryHistory()
+        self.output_processor = SimpleOutputProcessor()
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
@@ -135,13 +157,6 @@ class Reple:
         if repl_line != '':
             self.repl_lines.append(repl_line)
 
-    def get_new_lines(self):
-        nnew_lines = len(self.executions[self.output_fname_nonce]) - len(self.executions[self.output_fname_nonce-1])
-        if nnew_lines > 0:
-            return self.executions[self.output_fname_nonce][-nnew_lines:]
-        else:
-            return []
-
     def execute(self, repl_line, prolog_line = ''):
         cur_prolog_lines = self.prolog_lines + [prolog_line]
         cur_repl_lines = self.repl_lines + [repl_line]
@@ -155,7 +170,7 @@ class Reple:
             self.runtime_env.run(bin_fname, output_fname)
 
             self.executions[self.output_fname_nonce] = open(output_fname, 'r').readlines()
-            new_lines = self.get_new_lines()
+            new_lines = self.output_processor.get_new_lines(self.executions, self.output_fname_nonce)
             if len(new_lines) > 0:
                 for l in [line.strip() for line in new_lines]:
                     print(l)
