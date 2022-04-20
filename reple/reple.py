@@ -2,28 +2,19 @@
 
 from __future__ import unicode_literals
 
-import sys
-import os
-
-from functools import reduce
-from operator import add
-from collections import defaultdict
-
-from functools import partial
-
-import importlib
-
 import argparse
 import json
+import os
+import sys
+from collections import defaultdict
+from operator import add
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
-
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.styles import style_from_pygments_cls
-
 from pygments.styles import get_style_by_name
-from pygments.formatters import Terminal256Formatter
+
 
 class CompilationEnvironment:
     def __init__(self, compile, compile_args, user_cargs):
