@@ -101,6 +101,9 @@ class OutputProcessor(ABC):
     def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
         ...
 
+    def wrap_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
+        return lines
+
 
 class SimpleOutputProcessor(OutputProcessor):
     """Determine new lines by tracking the number of lines returned"""
@@ -139,6 +142,9 @@ class DemarcatedOutputProcessor(OutputProcessor):
 
     def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
         return self.undemarcate_lines(executions[output_fname_nonce])[output_fname_nonce]
+
+    def wrap_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
+        return self.demarcate_lines(lines, 'echo {demarcater}', output_fname_nonce)
 
 
 class Reple:
