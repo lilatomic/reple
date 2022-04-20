@@ -9,7 +9,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from operator import add
-from typing import List
+from typing import List, Dict
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
@@ -83,6 +83,7 @@ class CodeTemplate:
         self.template_args = template_args
 
         self.line_epilogue = self.template_args['line_epilogue']
+        self.line_demarcater = self.template_args.get('line_demarcater')
 
         assert('prolog_lines' in self.template)
         assert('repl_lines' in self.template)
@@ -110,6 +111,34 @@ class SimpleOutputProcessor(OutputProcessor):
             return executions[output_fname_nonce][-nnew_lines:]
         else:
             return []
+
+
+class DemarcatedOutputProcessor(OutputProcessor):
+    """Determine new lines by injecting fence lines"""
+    start_str = "start:¶"
+    end_str = "end  :¶"
+
+    def demarcate_lines(self, lines: List[str], demarcater_template: str, output_fname_nonce: int) -> List[str]:
+        start = demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
+        end = demarcater_template.format(demarcater=f'{self.end_str}{output_fname_nonce}')
+        return [start] + lines + [end]
+
+    def undemarcate_lines(self, lines: List[str]) -> Dict[int, List[str]]:
+        current_nonce = None
+        undemarcated_lines = defaultdict(list)
+
+        for line in lines:
+            if line.startswith(self.start_str):
+                current_nonce = int(line.split(self.start_str)[1])
+            elif line.startswith(self.end_str):
+                current_nonce = None
+            else:
+                undemarcated_lines[current_nonce].append(line)
+
+        return undemarcated_lines
+
+    def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
+        return self.undemarcate_lines(executions[output_fname_nonce])[output_fname_nonce]
 
 
 class Reple:

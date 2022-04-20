@@ -1,11 +1,11 @@
 from collections import defaultdict
 
-from reple.reple import SimpleOutputProcessor
+from reple.reple import SimpleOutputProcessor, DemarcatedOutputProcessor
 
 
 class TestSimpleOutputProcessor:
     def test_first_line(self):
-        line = ["55\n"]
+        line = ['55\n']
 
         executions = {
             -1: [],
@@ -16,8 +16,8 @@ class TestSimpleOutputProcessor:
         assert r == line
 
     def test_has_new_lines(self):
-        prev_line = ["hihello"]
-        line = ["55\n"]
+        prev_line = ['hihello']
+        line = ['55\n']
 
         executions = {
             -1: [],
@@ -28,7 +28,7 @@ class TestSimpleOutputProcessor:
         assert r == line
 
     def test_has_no_new_lines(self):
-        line = ["55\n"]
+        line = ['55\n']
         executions = {
             -1: [],
             0: line,
@@ -36,3 +36,26 @@ class TestSimpleOutputProcessor:
         }
         r = SimpleOutputProcessor().get_new_lines(executions, 1)
         assert r == []
+
+
+class TestLineDemarcater:
+    def test_demarcate_lines(self):
+        lines = ['print(0)', 'print(1)']
+        r = DemarcatedOutputProcessor().demarcate_lines(lines, 'print("{demarcater}")', 4)
+        assert r == ['print("start:¶4")', 'print(0)', 'print(1)', 'print("end  :¶4")']
+
+    def test_undemarcate_lines(self):
+        output = ['start:¶4\n', '0\n', '1\n', 'end  :¶4\n']
+        r = DemarcatedOutputProcessor().undemarcate_lines(output)
+        assert r == {
+            4: ['0\n', '1\n']
+        }
+
+    def test_get_new_lines(self):
+        executions = {
+            0: ['start:¶0\n', '0\n', 'end  :¶1\n'],
+            1: ['start:¶0\n', '0\n', 'end  :¶0\n', 'start:¶1\n', '1\n', 'end  :¶1\n'],
+        }
+        r = DemarcatedOutputProcessor().get_new_lines(executions, 1)
+        assert r == ['1\n']
+        
