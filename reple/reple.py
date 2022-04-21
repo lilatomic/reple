@@ -9,7 +9,7 @@ import sys
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from operator import add
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
@@ -83,7 +83,7 @@ class CodeTemplate:
         self.template_args = template_args
 
         self.line_epilogue = self.template_args['line_epilogue']
-        self.line_demarcater = self.template_args.get('line_demarcater')
+        self.output_processor = self.template_args.get('output_processor')
 
         assert('prolog_lines' in self.template)
         assert('repl_lines' in self.template)
@@ -95,8 +95,8 @@ class CodeTemplate:
                 repl_lines=repl_lines, **self.template_args)
 
     def make_output_processor(self) -> OutputProcessor:
-        if self.line_demarcater:
-            return DemarcatedOutputProcessor(self.line_demarcater)
+        if self.output_processor:
+            return DemarcatedOutputProcessor(**self.output_processor)
         else:
             return SimpleOutputProcessor()
 
@@ -107,8 +107,8 @@ class OutputProcessor(ABC):
     def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
         ...
 
-    def wrap_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
-        return lines
+    def wrap_lines(self, repl_lines: List[str], prolog_lines: List[str], output_fname_nonce: int) -> Tuple[List[str], List[str]]:
+        return repl_lines, prolog_lines
 
 
 class SimpleOutputProcessor(OutputProcessor):
@@ -127,8 +127,14 @@ class DemarcatedOutputProcessor(OutputProcessor):
     start_str = "start:¶"
     end_str = "end:¶"
 
-    def __init__(self, demarcater_template: str):
+    def __init__(self, demarcater_template: str, supported=None):
         self.demarcater_template = demarcater_template
+        if supported is None:
+            supported = {
+                "prolog": False,
+                "repl": True
+            }
+        self.supported = supported
 
     def demarcate_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
         start = self.demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
@@ -152,8 +158,18 @@ class DemarcatedOutputProcessor(OutputProcessor):
     def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
         return self.undemarcate_lines(executions[output_fname_nonce])[output_fname_nonce]
 
-    def wrap_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
-        return self.demarcate_lines(lines, output_fname_nonce)
+    def wrap_lines(self, repl_lines: List[str], prolog_lines: List[str], output_fname_nonce: int) -> Tuple[List[str], List[str]]:
+        if self.supported.get('repl'):
+            wrapped_repl_lines = self.demarcate_lines(repl_lines, output_fname_nonce)
+        else:
+            wrapped_repl_lines = repl_lines
+
+        if self.supported.get('prolog'):
+            wrapped_prolog_lines = self.demarcate_lines(prolog_lines, output_fname_nonce)
+        else:
+            wrapped_prolog_lines = prolog_lines
+
+        return wrapped_repl_lines, wrapped_prolog_lines
 
 
 class Reple:
@@ -201,10 +217,12 @@ class Reple:
         if repl_lines:
             self.repl_lines.extend(repl_lines)
 
-    def execute(self, repl_line, prolog_line = ''):
-        wrapped_prolog_lines = self.output_processor.wrap_lines([prolog_line], self.output_fname_nonce)
+    def execute(self, repl_line, prolog_line=''):
+        wrapped_repl_lines, wrapped_prolog_lines = self.output_processor.wrap_lines(
+            [repl_line], [prolog_line], self.output_fname_nonce
+        )
+
         cur_prolog_lines = self.prolog_lines + wrapped_prolog_lines
-        wrapped_repl_lines = self.output_processor.wrap_lines([repl_line], self.output_fname_nonce)
         cur_repl_lines = self.repl_lines + wrapped_repl_lines
 
         code = self.code_templ.generate_code(cur_prolog_lines, cur_repl_lines)

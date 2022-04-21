@@ -9,7 +9,13 @@
 	"template_args": {
 		"template_begin": "#! /bin/bash",
 		"line_epilogue": "",
-		"line_demarcater": "echo '{demarcater}'"
+		"output_processor": {
+			"demarcater_template": "printf '\n{demarcater}\n'",
+			"supported": {
+				"prolog": true,
+				"repl": true
+			}
+		}
 	},
 	"terminal_opts": {
 		"lexer_fn": "BashLexer",
