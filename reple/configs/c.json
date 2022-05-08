@@ -13,6 +13,7 @@
         "template_end": "return 0;\n}",
         "line_epilogue": "",
         "output_processor": {
+            "type": "demarcated",
             "demarcater_template": "printf(\"\\n{demarcater}\\n\");",
             "supported": {
                 "prolog": false,

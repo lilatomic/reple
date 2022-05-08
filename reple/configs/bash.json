@@ -10,6 +10,7 @@
 		"template_begin": "#! /bin/bash",
 		"line_epilogue": "",
 		"output_processor": {
+			"type": "demarcated",
 			"demarcater_template": "printf '\n{demarcater}\n'",
 			"supported": {
 				"prolog": true,

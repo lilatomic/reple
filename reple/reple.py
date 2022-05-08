@@ -95,13 +95,20 @@ class CodeTemplate:
                 repl_lines=repl_lines, **self.template_args)
 
     def make_output_processor(self) -> OutputProcessor:
-        if self.output_processor:
-            return DemarcatedOutputProcessor(**self.output_processor)
+        name_to_output_processor = {
+               "simple": SimpleOutputProcessor,
+               "demarcated": DemarcatedOutputProcessor,
+       }
+        if self.output_processor and self.output_processor.get("type"):
+            return name_to_output_processor[self.output_processor["type"]](**self.output_processor)
         else:
             return SimpleOutputProcessor()
 
 
 class OutputProcessor(ABC):
+    def __init__(self, **_):
+        ...
+
     """Process the output of executions to identify which input the lines should be associated with"""
     @abstractmethod
     def get_new_lines(self, executions, output_fname_nonce) -> List[str]:
@@ -127,7 +134,8 @@ class DemarcatedOutputProcessor(OutputProcessor):
     start_str = "start:¶"
     end_str = "end:¶"
 
-    def __init__(self, demarcater_template: str, supported=None):
+    def __init__(self, demarcater_template: str, supported=None, **_):
+        super().__init__(**_)
         self.demarcater_template = demarcater_template
         if supported is None:
             supported = {
