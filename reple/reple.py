@@ -145,6 +145,9 @@ class DemarcatedOutputProcessor(OutputProcessor):
         self.supported = supported
 
     def demarcate_lines(self, lines: List[str], output_fname_nonce: int) -> List[str]:
+        if not lines or lines == ['']:
+            return lines
+
         start = self.demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
         end = self.demarcater_template.format(demarcater=f'{self.end_str}{output_fname_nonce}')
         return [start] + lines + [end]
