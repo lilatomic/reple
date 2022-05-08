@@ -131,8 +131,8 @@ class SimpleOutputProcessor(OutputProcessor):
 
 class DemarcatedOutputProcessor(OutputProcessor):
     """Determine new lines by injecting fence lines"""
-    start_str = "start:¶"
-    end_str = "end:¶"
+    start_str = "¶start:"
+    end_str = "¶end:"
 
     def __init__(self, demarcater_template: str, supported=None, **_):
         super().__init__(**_)
