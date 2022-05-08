@@ -1,30 +1,22 @@
-import json
-
-from tests.driver import Driver
+from tests.integration.conftest import IntegrationTest
 
 
-class TestIntegrationBash:
-    @staticmethod
-    def driver():
-        with open("reple/configs/bash.json") as f:
-            return Driver(json.load(f))
+class TestIntegrationBash(IntegrationTest):
+    config_file = "reple/configs/bash.json"
 
-    def test_command(self):
-        driver = self.driver()
+    def test_command(self, driver):
         cmds = [
             'echo "hello world"',
         ]
         assert driver.drive(cmds) == 'hello world\n'
 
-    def test_prolog(self):
-        driver = self.driver()
+    def test_prolog(self, driver):
         cmds = [
             driver.prolog_line('echo "hello world"'),
         ]
         assert driver.drive(cmds) == 'hello world\n'
 
-    def test_both(self):
-        driver = self.driver()
+    def test_both(self, driver):
         cmds = [
             'echo "hello main"',
             driver.prolog_line('echo "hello prolog"'),
