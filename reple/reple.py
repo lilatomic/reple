@@ -173,12 +173,15 @@ class DemarcatedOutputProcessor(OutputProcessor):
                 elif command.startswith(self.end_str):
                     current_nonce = None
                 remaining = line[end_command_index + 1:]
-                if remaining:
-                    parse(remaining)
             elif command_start_index != -1:  # command appears later on the line
                 undemarcated_lines[current_nonce].append(line[:command_start_index])
+                remaining = line[command_start_index:]
             else:  # no command left on the line
                 undemarcated_lines[current_nonce].append(line)
+                remaining = None
+
+            if remaining:
+                parse(remaining)
 
         for line in lines:
             parse(line)

@@ -67,8 +67,17 @@ class TestLineDemarcater:
         we want to be able to have commands and body on the same line
         """
 
-        output = ['¶start:4¶0\n', '1¶end:4¶\n']
+        output = ['¶start:4¶0\n', '1¶end:4¶']
         r = DemarcatedOutputProcessor(self.demarcater_template).undemarcate_lines(output)
         assert r == {
             4: ['0\n', '1']
+        }
+
+    def test_line_multiple_statements(self):
+        output = ["¶start:1¶hello world¶end:1¶¶start:2¶hello world¶end:2¶¶start:3¶hello world¶end:3¶"]
+        r = DemarcatedOutputProcessor(self.demarcater_template).undemarcate_lines(output)
+        assert r == {
+            1: ["hello world"],
+            2: ["hello world"],
+            3: ["hello world"],
         }
