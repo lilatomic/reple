@@ -341,6 +341,17 @@ def get_config_fname(args):
             return fname
     return fname
 
+
+def reple_from_config(config, user_cargs, user_rargs):
+    comp_env = CompilationEnvironment(config['compile'], config['compile_args'],
+                                      user_cargs)
+    runtime_env = RuntimeEnvironment(config['run'], user_rargs)
+    code_templ = CodeTemplate(config['template'], config['template_args'])
+    terminal_opts = configure_terminal_opts(config['terminal_opts'])
+    reple = Reple(comp_env, runtime_env, code_templ, **terminal_opts)
+    return reple
+
+
 def run_reple(cmd_args):
     parser = argparse.ArgumentParser(description='reple, an interactive REPL \
             for executable-driven software toolchains.')
@@ -362,19 +373,10 @@ def run_reple(cmd_args):
     assert(not (args.user_rargs != '' and '{user_rargs}' not in config['run']))
     assert(not (args.user_cargs != '' and '{user_cargs}' not in config['compile']))
 
-
-    comp_env = CompilationEnvironment(config['compile'], config['compile_args'],
-            args.user_cargs)
-
-    runtime_env = RuntimeEnvironment(config['run'], args.user_rargs)
-
-    code_templ = CodeTemplate(config['template'], config['template_args'])
-
-    terminal_opts = configure_terminal_opts(config['terminal_opts'])
-
-    reple = Reple(comp_env, runtime_env, code_templ, **terminal_opts)
+    reple = reple_from_config(config, args.user_cargs, args.user_rargs)
 
     reple.run()
+
 
 if __name__ == '__main__':
     run_reple(sys.argv[1:])
