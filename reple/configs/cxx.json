@@ -11,7 +11,17 @@
         "template_begin": "#include <cstdlib>\n#include <cstdio>\n#include <unistd.h>\n#include <iostream>\n",
         "template_main_begin": "int main(int argc, char **argv) {",
         "template_end": "return 0;\n}",
-        "line_epilogue": ""
+        "line_epilogue": "",
+		"output_processor": {
+			"type": "demarcated",
+			"demarcater_template": "std::cout << \"{demarcater}\";",
+			"command_symbol": "¶",
+			"supported": {
+				"prolog": false,
+				"repl": true
+			}
+		}
+
     },
     "terminal_opts": {
         "lexer_fn": "CppLexer",
