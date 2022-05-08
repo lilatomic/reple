@@ -14,7 +14,7 @@
         "line_epilogue": "",
         "output_processor": {
             "type": "demarcated",
-            "demarcater_template": "printf(\"\\n{demarcater}\\n\");",
+            "demarcater_template": "printf(\"{demarcater}\");",
             "supported": {
                 "prolog": false,
                 "repl": true
