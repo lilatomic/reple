@@ -25,3 +25,11 @@ class TestIntegrationC(IntegrationTest):
             'std::cout << text;',
             ]
         assert driver.drive(cmds) == 'hello world\nhello world\nhello world\n'
+
+    def test_simple(self, driver):
+        r = self.replay_from_file("tests/simple.cxx.dat", driver)
+        assert r == "Hello, World!\n25\n"
+
+    def test_include(self, driver):
+        r = self.replay_from_file("tests/include.cxx.dat", driver)
+        assert r == "Aha! they are the same.\n"
