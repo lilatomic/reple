@@ -196,6 +196,7 @@ class Reple:
 
         self.prolog_lines = []
         self.repl_lines = []
+        self.in_prolog = False
 
         self.executions = defaultdict(list)
 
@@ -299,7 +300,6 @@ class Reple:
     def run(self):
         repl_lines = []
         prolog_lines = []
-        self.in_prolog = False
         encloser_counts = [0] * len(self.enclosers)
         while True:
             try:
