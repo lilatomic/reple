@@ -131,12 +131,13 @@ class SimpleOutputProcessor(OutputProcessor):
 
 class DemarcatedOutputProcessor(OutputProcessor):
     """Determine new lines by injecting fence lines"""
-    start_str = "¶start:"
-    end_str = "¶end:"
+    start_str = "start:"
+    end_str = "end:"
 
-    def __init__(self, demarcater_template: str, supported=None, **_):
+    def __init__(self, demarcater_template: str, supported=None, command_symbol="¶", **_):
         super().__init__(**_)
         self.demarcater_template = demarcater_template
+        self.command_symbol = command_symbol
         if supported is None:
             supported = {
                 "prolog": False,
@@ -148,21 +149,39 @@ class DemarcatedOutputProcessor(OutputProcessor):
         if not lines or lines == ['']:
             return lines
 
-        start = self.demarcater_template.format(demarcater=f'{self.start_str}{output_fname_nonce}')
-        end = self.demarcater_template.format(demarcater=f'{self.end_str}{output_fname_nonce}')
+        start = self.demarcater_template.format(
+            demarcater=f'{self.command_symbol}{self.start_str}{output_fname_nonce}{self.command_symbol}'
+        )
+        end = self.demarcater_template.format(
+            demarcater=f'{self.command_symbol}{self.end_str}{output_fname_nonce}{self.command_symbol}'
+        )
         return [start] + lines + [end]
 
     def undemarcate_lines(self, lines: List[str]) -> Dict[int, List[str]]:
         current_nonce = None
         undemarcated_lines = defaultdict(list)
 
-        for line in lines:
-            if line.startswith(self.start_str):
-                current_nonce = int(line.split(self.start_str)[1])
-            elif line.startswith(self.end_str):
-                current_nonce = None
-            else:
+        def parse(line: str):
+            nonlocal current_nonce
+
+            command_start_index = line.find(self.command_symbol)
+            if command_start_index == 0:  # at a command
+                end_command_index = line.find(self.command_symbol, command_start_index+1)
+                command = line[1:end_command_index]
+                if command.startswith(self.start_str):
+                    current_nonce = int(command.split(self.start_str)[1])
+                elif command.startswith(self.end_str):
+                    current_nonce = None
+                remaining = line[end_command_index + 1:]
+                if remaining:
+                    parse(remaining)
+            elif command_start_index != -1:  # command appears later on the line
+                undemarcated_lines[current_nonce].append(line[:command_start_index])
+            else:  # no command left on the line
                 undemarcated_lines[current_nonce].append(line)
+
+        for line in lines:
+            parse(line)
 
         return undemarcated_lines
 

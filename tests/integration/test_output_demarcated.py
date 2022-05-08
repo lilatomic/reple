@@ -21,7 +21,7 @@ class TestOutputDemarcatedNondeterminism:
         driver = self.driver()
         # force output_processor to be DemarcatedOutputProcessor
         output_processor = DemarcatedOutputProcessor(
-            demarcater_template="printf '\\n{demarcater}\\n'",
+            demarcater_template="printf '{demarcater}'",
             supported={"prolog": True, "repl": True},
         )
         driver.reple.output_processor = output_processor
@@ -31,11 +31,11 @@ class TestOutputDemarcatedNondeterminism:
             "printf $x",  # print it in the main body
             driver.prolog_line('x="${x}\\n0\\n1\\n2"'),  # redefine the value in the prolog
         ]
-        assert driver.drive(cmds) == '\nfirst\n\n'
+        assert driver.drive(cmds) == 'first\n'
 
         # check that output has indeed changed.
         # This digs into the internals so is fragile,
         # but I'm not sure that there's a need for a robust interface
         last_run = list(driver.reple.executions.values())[-1]
         processed_output = output_processor.undemarcate_lines(last_run)
-        assert processed_output[1] == ['first\n', '0\n', '1\n', '2\n']
+        assert processed_output[1] == ['first\n', '0\n', '1\n', '2']

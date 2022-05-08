@@ -14,14 +14,14 @@ class TestIntegrationBash:
         cmds = [
             'echo "hello world"',
         ]
-        assert driver.drive(cmds) == 'hello world\n\n'
+        assert driver.drive(cmds) == 'hello world\n'
 
     def test_prolog(self):
         driver = self.driver()
         cmds = [
             driver.prolog_line('echo "hello world"'),
         ]
-        assert driver.drive(cmds) == 'hello world\n\n'
+        assert driver.drive(cmds) == 'hello world\n'
 
     def test_both(self):
         driver = self.driver()
@@ -29,5 +29,5 @@ class TestIntegrationBash:
             'echo "hello main"',
             driver.prolog_line('echo "hello prolog"'),
         ]
-        assert driver.drive(cmds) == 'hello main\n\nhello prolog\n\n'
+        assert driver.drive(cmds) == 'hello main\nhello prolog\n'
 
