@@ -161,17 +161,16 @@ class DemarcatedOutputProcessor(OutputProcessor):
         current_nonce = None
         undemarcated_lines = defaultdict(list)
 
-        def parse(line: str):
-            nonlocal current_nonce
-
+        def parse(line: str, current_nonce: int):
+            next_nonce = current_nonce
             command_start_index = line.find(self.command_symbol)
             if command_start_index == 0:  # at a command
                 end_command_index = line.find(self.command_symbol, command_start_index+1)
                 command = line[1:end_command_index]
                 if command.startswith(self.start_str):
-                    current_nonce = int(command.split(self.start_str)[1])
+                    next_nonce = int(command.split(self.start_str)[1])
                 elif command.startswith(self.end_str):
-                    current_nonce = None
+                    next_nonce = None
                 remaining = line[end_command_index + 1:]
             elif command_start_index != -1:  # command appears later on the line
                 undemarcated_lines[current_nonce].append(line[:command_start_index])
@@ -179,11 +178,11 @@ class DemarcatedOutputProcessor(OutputProcessor):
             else:  # no command left on the line
                 undemarcated_lines[current_nonce].append(line)
                 remaining = None
-            return remaining
+            return remaining, next_nonce
 
         for line in lines:
             while line:
-                line = parse(line)
+                line, current_nonce = parse(line, current_nonce)
 
         return undemarcated_lines
 
