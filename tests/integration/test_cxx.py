@@ -1,7 +1,7 @@
 from tests.integration.conftest import IntegrationTest
 
 
-class TestIntegrationC(IntegrationTest):
+class TestIntegrationCxx(IntegrationTest):
     config_file = "reple/configs/cxx.json"
 
     def test_command(self, driver):

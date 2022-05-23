@@ -10,7 +10,16 @@
         "template_begin": "package main\nimport \"fmt\"\n",
         "template_main_begin": "func main() {",
         "template_end": "}",
-        "line_epilogue": ""
+        "line_epilogue": "",
+        "output_processor" : {
+            "type": "demarcated",
+            "demarcater_template": "fmt.Print(\"{demarcater}\")",
+            "command_symbol": "¶",
+			"supported": {
+				"prolog": false,
+				"repl": true
+			}
+        }
     },
     "terminal_opts": {
         "lexer_fn": "GoLexer",

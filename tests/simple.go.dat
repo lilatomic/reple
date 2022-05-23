@@ -1,0 +1,6 @@
+fmt.Print("Hello, World!")
+var x = 12; _ = x
+$var y = 13$
+z := x + y; _ = z
+fmt.Print(z)
+quit
