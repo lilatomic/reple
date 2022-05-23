@@ -179,12 +179,11 @@ class DemarcatedOutputProcessor(OutputProcessor):
             else:  # no command left on the line
                 undemarcated_lines[current_nonce].append(line)
                 remaining = None
-
-            if remaining:
-                parse(remaining)
+            return remaining
 
         for line in lines:
-            parse(line)
+            while line:
+                line = parse(line)
 
         return undemarcated_lines
 
